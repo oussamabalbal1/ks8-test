@@ -1,0 +1,14 @@
+---
+- name: Clone Git repository
+  hosts: localhost
+  become: yes
+  vars:
+      git_repo: https://github.com/username/repository.git  # Replace with your Git repository URL
+      git_dest: /home/ubuntu/project-zero/  # Destination directory
+  tasks:
+    - name: Clone repository from Git
+      ansible.builtin.git:
+        repo: "{{ git_repo }}"  # Replace with your Git repository URL
+        dest: "{{ git_dest }}"  # Destination path on the client machine
+        version: main  # Branch, tag, or commit to check out (default is 'HEAD')
+        force: yes  # Force the clone if the destination already exists

@@ -1,0 +1,18 @@
+---
+- name: Generate SSH keys
+  hosts: localhost
+  tasks:
+    - name: Generate RSA SSH key pair
+    #-N "": Sets an empty passphrase for the private key
+      ansible.builtin.shell: ssh-keygen -t rsa -b 2048 -f /home/ubuntu/project-zero/terraform/oussama -N ""
+      args:
+        creates: /home/ubuntu/project-zero/terraform/oussama  # Ensures the task runs only if the key does not exist
+ 
+    - name: Display the public key
+      ansible.builtin.command:
+        cmd: cat /home/ubuntu/project-zero/terraform/oussama.pub
+      register: public_key_output
+
+    - name: Show the public key
+      ansible.builtin.debug:
+        msg: "{{ public_key_output.stdout }}"
