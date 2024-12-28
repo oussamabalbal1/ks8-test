@@ -4,8 +4,8 @@
   become: true
   vars:
     aws_installation_url: "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
-    aws_access_key: "AKIA5FTZFH56B6DFDYOS"
-    aws_secret_key: "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"
+    aws_access_key: ""
+    aws_secret_key: ""
     aws_default_region: "us-east-1"
     output_format: "json"
   tasks:
