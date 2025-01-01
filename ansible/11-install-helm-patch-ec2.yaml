@@ -17,9 +17,9 @@
 
     - name: Patch Kubernetes Nodes
       shell: |
-        kubectl patch node master -p '{"spec":{"providerID":"aws:///us-east-1a/'+{{ ec2_instance_ids[0] }}+'"}}'
-        kubectl patch node worker1 -p '{"spec":{"providerID":"aws:///us-east-1a/'+{{ ec2_instance_ids[1] }}+'"}}'
-        kubectl patch node worker2 -p '{"spec":{"providerID":"aws:///us-east-1a/'+{{ ec2_instance_ids[2] }}+'"}}'
+        kubectl patch node master -p '{"spec":{"providerID":"aws:///us-east-1a/{{ ec2_instance_ids[0] }}"}}'
+        kubectl patch node worker1 -p '{"spec":{"providerID":"aws:///us-east-1a/{{ ec2_instance_ids[1] }}"}}'
+        kubectl patch node worker2 -p '{"spec":{"providerID":"aws:///us-east-1a/{{ ec2_instance_ids[2] }}"}}'
 
     - name: Deploy AWS Load Balancer Controller
       shell: |
