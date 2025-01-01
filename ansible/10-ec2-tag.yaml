@@ -1,0 +1,10 @@
+- name: Tag AWS Subnets on worker nodes
+  hosts: localhost
+  vars_files:
+    - /home/ubuntu/project-zero/ansible/terraform_outputs.yaml
+    #NOW YOU CAN GET THE VARIABLES FROM THE FILE DIRECTLY
+  tasks:
+    - name: Tag AWS Subnets
+      shell: |
+        aws ec2 create-tags --resources {{ subnet_id }} --tags Key=kubernetes.io/role/elb,Value=1 
+        aws ec2 create-tags --resources {{ subnet_id }} --tags Key=kubernetes.io/cluster/kubernetes,Value=owned
