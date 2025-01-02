@@ -1,9 +1,0 @@
-master ansible_host=172.31.96.80 ansible_user=ubuntu ansible_ssh_host_key_checking=False ansible_ssh_private_key_file=/home/ubuntu/project-zero/terraform/oussama
-worker1 ansible_host=172.31.96.81 ansible_user=ubuntu ansible_ssh_host_key_checking=False ansible_ssh_private_key_file=/home/ubuntu/project-zero/terraform/oussama
-worker2 ansible_host=172.31.96.82 ansible_user=ubuntu ansible_ssh_host_key_checking=False ansible_ssh_private_key_file=/home/ubuntu/project-zero/terraform/oussama
-
-
-[workers]
-worker1
-worker2
-
