@@ -1,0 +1,49 @@
+---
+- name: Deploy Kubernetes Dashboard
+  hosts: master
+  become: yes
+  tasks:
+
+    - name: Apply Kubernetes Dashboard YAML
+      command:
+        cmd: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+
+    - name: Create ServiceAccount and RoleBinding for Admin User
+      shell: |
+        cat <<EOF | kubectl apply -f -
+        apiVersion: v1
+        kind: ServiceAccount
+        metadata:
+          name: admin-user
+          namespace: kubernetes-dashboard
+        ---
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: ClusterRoleBinding
+        metadata:
+          name: admin-user-binding
+        roleRef:
+          apiGroup: rbac.authorization.k8s.io
+          kind: ClusterRole
+          name: cluster-admin
+        subjects:
+        - kind: ServiceAccount
+          name: admin-user
+          namespace: kubernetes-dashboard
+        ---
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: admin-user
+          namespace: kubernetes-dashboard
+          annotations:
+            kubernetes.io/service-account.name: "admin-user"
+        type: kubernetes.io/service-account-token
+        EOF
+
+    - name: Get Admin User Token
+      shell: kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath="{.data.token}" | base64 -d
+      register: admin_token
+
+    - name: Display Admin Token
+      debug:
+        msg: "Admin Token: {{ admin_token.stdout }}"

@@ -1,0 +1,48 @@
+- name: Manage AWS IAM Role and EC2 Attachments
+  hosts: localhost
+  vars_files:
+    - /home/ubuntu/project-zero/ansible/terraform_outputs.yaml
+    #NOW YOU CAN GET THE VARIABLES FROM THE FILE DIRECTLY
+    #in this file i have variable called ec2_instance_ids is a list
+  vars:
+    region: us-east-1
+    iam_role_name: ec2-instance-role
+    iam_instance_profile_name: ec2-instance-role
+  tasks:
+    - name: Create IAM Role for EC2 instances
+      shell: |
+        aws iam create-role --role-name {{ iam_role_name }} --assume-role-policy-document file://policy.json --region {{ region }}
+      register: create_role
+      failed_when: create_role.rc != 0 and "EntityAlreadyExists" not in create_role.stderr
+
+    - name: Attach AdministratorAccess policy to IAM Role
+      shell: |
+        aws iam attach-role-policy --role-name {{ iam_role_name }} --policy-arn arn:aws:iam::aws:policy/AdministratorAccess --region {{ region }}
+      register: attach_policy
+
+
+    - name: Create IAM Instance Profile
+      shell: |
+        aws iam create-instance-profile --instance-profile-name {{ iam_instance_profile_name }} --region {{ region }}
+      register: create_profile
+      failed_when: create_profile.rc != 0 and "EntityAlreadyExists" not in create_profile.stderr
+
+    - name: Add Role to Instance Profile
+      shell: |
+        aws iam add-role-to-instance-profile --instance-profile-name {{ iam_instance_profile_name }} --role-name {{ iam_role_name }} --region {{ region }}
+      register: add_role_to_profile
+      failed_when: add_role_to_profile.rc != 0 and "EntityAlreadyExists" not in add_role_to_profile.stderr
+   
+    - name: Get AWS account ID (less recommended)
+      command: aws sts get-caller-identity --query "Account" --output text
+      register: account_id_output
+    - name: Sleep for 10 seconds
+      pause:
+        seconds: 10
+
+    - name: Attach IAM Instance Profile to EC2 instances
+      loop: "{{ ec2_instance_ids }}" # Correct way to loop
+      shell: |
+        aws ec2 associate-iam-instance-profile --instance-id {{ item }} \
+        --iam-instance-profile Arn=arn:aws:iam::{{ account_id_output.stdout }}:instance-profile/{{ iam_instance_profile_name }}
+      register: associate_profile
