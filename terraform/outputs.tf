@@ -1,6 +1,6 @@
 # Sleep for a specified duration
 resource "time_sleep" "wait" {
-  depends_on = [aws_instance.example] # Ensure it waits after instance provisioning
+  depends_on = [aws_instance.server-instances] # Ensure it waits after instance provisioning
   create_duration = "30s" # Specify wait time (e.g., 20 seconds)
 }
 
