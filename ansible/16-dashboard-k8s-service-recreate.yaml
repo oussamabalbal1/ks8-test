@@ -1,0 +1,38 @@
+
+- name: Recreate the ArgoCD server service
+  hosts: master
+  tasks:
+    - name: Delete existing service
+      k8s:
+        state: absent
+        kind: Service
+        namespace: kubernetes-dashboard
+        name: kubernetes-dashboard
+
+    - name: Create a new service with LoadBalancer type
+      k8s:
+        state: present
+        kind: Service
+        namespace: kubernetes-dashboard
+        resource_definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: kubernetes-dashboard
+            namespace: kubernetes-dashboard
+            annotations:
+              service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+              service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+              service.beta.kubernetes.io/aws-load-balancer-internal: "false"
+          spec:
+            type: LoadBalancer
+            ports:
+              - port: 443
+                protocol: TCP
+                targetPort: 8443
+            selector:
+              k8s-app: kubernetes-dashboard
+
+
+
+
