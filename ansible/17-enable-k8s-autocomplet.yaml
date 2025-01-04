@@ -3,24 +3,28 @@
   become: yes
   tasks:
     - name: Install bash-completion
+      become_user: ubuntu
       apt:
         name: bash-completion
         state: present
         update_cache: yes
 
     - name: Enable kubectl completion for the current session
+      become_user: ubuntu
       shell: |
         source <(kubectl completion bash)
       args:
         executable: /bin/bash
 
     - name: Add kubectl completion to .bashrc
+      become_user: ubuntu
       lineinfile:
         path: ~/.bashrc
         line: "source <(kubectl completion bash)"
         state: present
 
     - name: Reload shell configuration
+      become_user: ubuntu
       shell: source ~/.bashrc
       args:
         executable: /bin/bash
