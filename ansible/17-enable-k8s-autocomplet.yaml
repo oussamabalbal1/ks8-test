@@ -1,0 +1,26 @@
+- name: Enable Kubernetes Auto-Completion
+  hosts: master
+  become: yes
+  tasks:
+    - name: Install bash-completion
+      apt:
+        name: bash-completion
+        state: present
+        update_cache: yes
+
+    - name: Enable kubectl completion for the current session
+      shell: |
+        source <(kubectl completion bash)
+      args:
+        executable: /bin/bash
+
+    - name: Add kubectl completion to .bashrc
+      lineinfile:
+        path: ~/.bashrc
+        line: "source <(kubectl completion bash)"
+        state: present
+
+    - name: Reload shell configuration
+      shell: source ~/.bashrc
+      args:
+        executable: /bin/bash

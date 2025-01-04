@@ -1,0 +1,74 @@
+---
+- name: Deploy Kubernetes Dashboard and Configure Admin User
+  hosts: master
+  become: yes
+  environment:
+    KUBECONFIG: "/home/ubuntu/.kube/config"
+  vars:
+    dashboard_yaml_url: "https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml"
+    kubeconfig_path: "/home/ubuntu/.kube/config"
+
+  tasks:
+    - name: Download Kubernetes Dashboard YAML
+      get_url:
+        url: "{{ dashboard_yaml_url }}"
+        dest: /tmp/dashboard.yaml
+
+    - name: Apply Kubernetes Dashboard manifest
+      k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        src: /tmp/dashboard.yaml
+
+    - name: Create admin-user ServiceAccount
+      k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition:
+          apiVersion: v1
+          kind: ServiceAccount
+          metadata:
+            name: admin-user
+            namespace: kubernetes-dashboard
+
+    - name: Create ClusterRoleBinding for admin-user
+      k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition:
+          apiVersion: rbac.authorization.k8s.io/v1
+          kind: ClusterRoleBinding
+          metadata:
+            name: admin-user-binding
+          roleRef:
+            apiGroup: rbac.authorization.k8s.io
+            kind: ClusterRole
+            name: cluster-admin
+          subjects:
+          - kind: ServiceAccount
+            name: admin-user
+            namespace: kubernetes-dashboard
+
+    - name: Create Secret for admin-user ServiceAccount
+      k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: admin-user
+            namespace: kubernetes-dashboard
+            annotations:
+              kubernetes.io/service-account.name: "admin-user"
+          type: kubernetes.io/service-account-token
+
+
+    - name: Retrieve admin-user token
+      shell: kubectl -n kubernetes-dashboard get secret admin-user -o jsonpath="{.data.token}" | base64 -d
+      register: admin_token
+
+    - name: Display admin-user token
+      debug:
+        msg: "Admin Token: {{ admin_token.stdout }}"
+

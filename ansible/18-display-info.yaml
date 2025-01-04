@@ -1,0 +1,54 @@
+---
+- name: Deploy Kubernetes Dashboard and Configure Admin User
+  hosts: master
+  become: yes
+  environment:
+    KUBECONFIG: "/home/ubuntu/.kube/config"
+  vars:
+    dashboard_yaml_url: "https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml"
+    kubeconfig_path: "/home/ubuntu/.kube/config"
+
+  tasks:
+    - name: Retrieve admin-user token
+      shell: kubectl -n kubernetes-dashboard get secret admin-user -o jsonpath="{.data.token}" | base64 -d
+      register: admin_token
+
+    - name: Display admin-user token
+      debug:
+        msg: "Admin Token: {{ admin_token.stdout }}"
+
+    - name: Retrieve Kubernetes-dashboard loadbalancer hostname
+      shell: kubectl get service -n kubernetes-dashboard kubernetes-dashboard -o jsonpath="{.status.loadBalancer.ingress[0].hostname}"
+      register: hostnamek
+
+    - name: Display admin-user token
+      debug:
+        msg: "Kubernetes-dashboard loadbalancer hostname: {{ hostnamek.stdout }}"
+
+    - name: Retrieve ArgoCD admin password
+      shell: kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+      register: admin_password
+
+    - name: Display ArgoCD admin password
+      debug:
+        msg: "ArgoCD admin password: {{ admin_password.stdout }}"
+
+    - name: Retrieve ArgoCD loadbalancer hostname
+      shell: kubectl get service -n argocd argocd-server  -o jsonpath="{.status.loadBalancer.ingress[0].hostname}"
+      register: hostnamea
+
+    - name: Display ArgoCD loadbalancer hostname
+      debug:
+        msg: "ArgoCD loadbalancer hostname: {{ hostnamea.stdout }}"
+
+    - name: Retrieve nestjs application loadbalancer hostname
+      shell: kubectl get service -n development nestjs -o jsonpath="{.status.loadBalancer.ingress[0].hostname}"
+      register: hostnamen
+
+    - name: Display nestjs loadbalancer hostname
+      debug:
+        msg: "Nestjs application loadbalancer hostname: {{ hostnamen.stdout }}"
+
+
+
+

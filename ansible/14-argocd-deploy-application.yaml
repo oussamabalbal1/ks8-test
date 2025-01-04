@@ -1,0 +1,46 @@
+- name: Deploy ArgoCD Application using Ansible
+  hosts: master
+  gather_facts: no
+  vars_files:
+    - /home/ubuntu/project-zero/ansible/terraform_outputs.yaml
+    #NOW YOU CAN GET THE VARIABLES FROM THE FILE DIRECTLY
+  tasks:
+    - name: Retrieve Kubernetes-dashboard loadbalancer hostname
+      shell: kubectl create ns development
+      register: hostnamek
+
+    - name: Get ArgoCD NodePort
+      shell: kubectl get svc argocd-server -n argocd -o jsonpath='{.spec.ports[0].nodePort}'
+      register: argo_node_port
+    
+    - name: Set ArgoCD URL
+      set_fact:
+        argo_cd_url: "{{ ec2_instance_ips[0] }}:{{ argo_node_port.stdout }}"
+
+    - name: Get ArgoCD admin password
+      shell: kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+      register: admin_password
+
+
+    - name: Login to ArgoCD
+      shell: yes | argocd login {{ argo_cd_url }} --username admin --password {{ admin_password.stdout }} --insecure
+      register: argo_login_result
+      changed_when: argo_login_result is changed
+
+    - name: Create ArgoCD application
+      shell: |
+          argocd app create backend-app \
+            --repo https://github.com/oussamabalbal1/nestjs-argocd \
+            --path . \
+            --dest-server https://kubernetes.default.svc \
+            --dest-namespace development
+      register: argo_create_result
+
+    - name: Sync ArgoCD application
+      ansible.builtin.shell:
+        cmd: argocd app sync backend-app
+
+
+
+
+
