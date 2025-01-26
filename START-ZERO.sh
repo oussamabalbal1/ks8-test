@@ -28,7 +28,7 @@ if [[ -d "$PLAYBOOKS_DIR" ]]; then
   echo "Will execute playbooks that inside $PLAYBOOKS_DIR..."
 
   # List files, sort numerically and alphabetically, and store in a variable
-  PLAYBOOKS=($(ls -1 "$PLAYBOOKS_DIR" | grep -i yaml | sort -V | head -10))
+  PLAYBOOKS=($(ls -1 "$PLAYBOOKS_DIR" | grep -i yaml | sort -V))
 
   # Print the sorted files
   echo "Execute playbooks in ordred way like this :"
