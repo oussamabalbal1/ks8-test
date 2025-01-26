@@ -8,4 +8,4 @@
       shell: |
         aws ec2 create-tags --resources {{ subnet_id }} --tags Key=kubernetes.io/role/elb,Value=1 
         aws ec2 create-tags --resources {{ subnet_id }} --tags Key=kubernetes.io/cluster/kubernetes,Value=owned
-
+        aws ec2 create-tags --resources {{ subnet_id }} --tags Key=kubernetes.io/role/internal-elb,Value=1
